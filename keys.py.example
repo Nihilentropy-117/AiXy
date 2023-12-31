@@ -1,0 +1,19 @@
+openai_key = 'sk-Y...f'
+telegram_key = '6...8'
+postgres_connection_params = {
+    'database': '...',
+    'host': '...',
+    'user': '...',
+    'password': '...',
+    'port': '5432'
+}
+llm_rail_api = "api_6...4"
+
+authorized_users = {
+        "1...2": { # Telegram User ID
+            "Name": "Nihil",
+        },
+        "1...5": { # Telegram User ID
+            "Name": "Nihil2",
+        }
+    }
