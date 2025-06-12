@@ -7,6 +7,7 @@ import toml
 from intake_obsidian import intake
 from search_obsidian import search
 from openai import OpenAI
+from todoist import search as todoist_search
 
 # ---- CONFIG ----
 CONFIG = toml.load("config.toml")
@@ -121,10 +122,8 @@ class TaskAgent(Agent):
         super().__init__("TaskMaster")
 
     def handle(self, bot, message):
-        if message.text.lower().startswith("add task"):
-            bot.send_message(message.chat.id, f"[{self.name}] Task added: {message.text[9:].strip()}")
-        else:
-            bot.send_message(message.chat.id, f"[{self.name}] I do not understand: {message.text}")
+        bot.send_message(message.chat.id, f"{todoist_search(message.text)}")
+
 
 
 bot_agents = {
