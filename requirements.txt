@@ -97,3 +97,5 @@ websockets==15.0.1
 wrapt==1.17.2
 xxhash==3.5.0
 zipp==3.23.0
+
+todoist_api_python~=3.1.0
