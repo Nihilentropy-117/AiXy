@@ -55,7 +55,7 @@ def search(query, limit=5):
     )
 
     print(response.output_text)
-
+    return response.output_text
 
 if __name__ == "__main__":
     searches =["What am I doing thursday?", "What do I have on Laurens list?", "What tasks are due today?"]
