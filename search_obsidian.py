@@ -78,8 +78,8 @@ if __name__ == "__main__":
     "What’s the connection between pyramids and civilization?"
 ]
 
-    for search_text in searches:
-        print(f"Searching for: {search_text}")
-        print(search(search_text))
+    for search_tx in searches:
+        print(f"Searching for: {search_tx}")
+        print(search(search_tx, "wanderland"))
         print("-" * 40)
 

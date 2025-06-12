@@ -48,7 +48,14 @@ def embed(text):
     result = client.embeddings.create(input=[text], model=EMBEDDING_MODEL)
     return result.data[0].embedding
 
-def intake(VAULT, vault_label):
+def intake(VAULT, vault_label, bot=None, chat_id=None):
+
+    def update(message, bot):
+        if bot and chat_id:
+            bot.send_message(chat_id, message)
+        else:
+            print(message)
+
     VAULT = Path(VAULT)
     # --- LOAD EXISTING METADATA ---
     vault_files = {str(f.relative_to(VAULT)) for f in VAULT.rglob("*.md")}
@@ -84,44 +91,54 @@ def intake(VAULT, vault_label):
             update_queue.append((file, relpath, content, h))
 
     # --- INDEXING PHASE ---
-    for batch_start in tqdm(range(0, len(update_queue), 10), desc="Indexing files"):
-        batch = update_queue[batch_start:batch_start + 10]
+    total_files = len(update_queue)
+    if total_files == 0:
+        update("No files to update.", bot)
+    else:
+        update(f"Starting to process {total_files} modified file(s)...", bot)
 
-        for file, relpath, content, h in batch:
-            collection.delete(where={"filename": relpath})
+    percent_step = max(1, total_files // 10)
+    next_threshold = percent_step
 
-            # --- Part 0: Full file ---
-            full_input = f"Filename: {relpath}\nContent:\n{content}"
-            full_emb = embed(full_input)
-            collection.add(
-                documents=[content],
-                embeddings=[full_emb],
-                metadatas=[{"filename": relpath, "part": 0, "xxhash": h, "vault": vault_label}],
-                ids=[f"{relpath}::0"]
-            )
+    for index, (file, relpath, content, h) in enumerate(update_queue, start=1):
+        collection.delete(where={"filename": relpath})
 
-            # --- Chunking ---
-            raw_chunks = [c.strip() for c in content.split("\n\n") if c.strip()]
-            chunks = []
-            for chunk in raw_chunks:
-                if len(chunk) < 10 and chunks:
-                    chunks[-1] += "\n\n" + chunk
-                else:
-                    chunks.append(chunk)
+        # --- Part 0: Full file ---
+        full_input = f"Filename: {relpath}\nContent:\n{content}"
+        full_emb = embed(full_input)
+        collection.add(
+            documents=[content],
+            embeddings=[full_emb],
+            metadatas=[{"filename": relpath, "part": 0, "xxhash": h, "vault": vault_label}],
+            ids=[f"{relpath}::0"]
+        )
 
-            for i, chunk in enumerate(chunks, start=1):
-                try:
-                    chunk_input = f"Filename: {relpath}\nContent:\n{chunk}"
-                    e = embed(chunk_input)
-                    collection.add(
-                        documents=[chunk],
-                        embeddings=[e],
-                        metadatas=[{"filename": relpath, "part": i, "vault": vault_label}],
-                        ids=[f"{relpath}::{i}"]
-                    )
-                except ValueError as err:
-                    print(f"Skipping chunk in {relpath} (part {i}): {err}")
+        # --- Chunking ---
+        raw_chunks = [c.strip() for c in content.split("\n\n") if c.strip()]
+        chunks = []
+        for chunk in raw_chunks:
+            if len(chunk) < 10 and chunks:
+                chunks[-1] += "\n\n" + chunk
+            else:
+                chunks.append(chunk)
 
+        for i, chunk in enumerate(chunks, start=1):
+            try:
+                chunk_input = f"Filename: {relpath}\nContent:\n{chunk}"
+                e = embed(chunk_input)
+                collection.add(
+                    documents=[chunk],
+                    embeddings=[e],
+                    metadatas=[{"filename": relpath, "part": i, "vault": vault_label}],
+                    ids=[f"{relpath}::{i}"]
+                )
+            except ValueError as err:
+                update(f"Skipping chunk in {relpath} (part {i}): {err}", bot)
+
+        if index >= next_threshold or index == total_files:
+            percent = int(100 * index / total_files)
+            update(f"Progress: {percent}% ({index}/{total_files} files indexed)", bot)
+            next_threshold += percent_step
 
 
 if __name__ == "__main__":

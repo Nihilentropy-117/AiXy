@@ -77,7 +77,7 @@ class VaultAgent(Agent):
                 os.remove(zip_path)
 
         try:
-            result = intake(self.dest_dir, self.vault)
+            result = intake(self.dest_dir, self.vault, bot, chat_id)
             bot.send_message(chat_id, result or "(intake returned nothing)")
         except Exception as e:
             bot.send_message(chat_id, f"Error running intake(): {str(e)}")
@@ -85,7 +85,6 @@ class VaultAgent(Agent):
 class PersonalNotesAgent(VaultAgent):
     def __init__(self):
         super().__init__("Search_Personal_Notes", "wanderland")
-
 
 class TTRPGNotesAgent(VaultAgent):
     def __init__(self):
