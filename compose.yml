@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./chroma_db:/app/chroma_db
+    command: ["python", "bot.py"]
+    working_dir: /app
+    environment:
+      - PYTHONUNBUFFERED=1
