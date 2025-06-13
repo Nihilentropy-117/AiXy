@@ -5,6 +5,7 @@ from openai import OpenAI
 CONFIG = toml.load("config.toml")
 TODOIST_API_KEY = CONFIG["todoist"]["api"]
 OPENAI_API_KEY = CONFIG["openai"]["api"]
+USER_NAME = CONFIG["user"]["name"]
 
 
 api = TodoistAPI(TODOIST_API_KEY)
@@ -50,7 +51,7 @@ def search(query, limit=5):
     today = datetime.now().strftime("%Y-%m-%d (%A)")
     response = client.responses.create(
         model="gpt-4o-mini",
-        instructions=f"Answer the user's question based on the provided task list. The current user is [Gray Lott], and the date is {today}.",
+        instructions=f"Answer the user's question based on the provided task list. The current user is {USER_NAME}, and the date is {today}.",
         input=f"{query}\n\nHere is the task list:\n{TL}",
     )
 

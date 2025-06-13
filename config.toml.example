@@ -5,5 +5,8 @@ token = "8[...]A"
 api = "sk-proj-fEg[...]IA"
 
 [prompts]
-user_profile = "The Current User is named [...]. User highly values functional accuracy over hedging or vague qualifiers. \n"
+user_profile = "The Current User is named {}. User highly values functional accuracy over hedging or vague qualifiers. \n"
 bot_profile = "You are an efficient assistant. Tone is pragmatic — never performative.\n"
+
+[user]
+name = "John Doe"
